@@ -1,6 +1,10 @@
 #ifndef XMP_H
 #define XMP_H
 
+#define Xcalloc calloc
+#define Xfree free
+#define Xrealloc realloc
+#define Xmalloc malloc
 #ifdef __cplusplus
 extern "C" {
 #endif

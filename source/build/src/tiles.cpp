@@ -156,7 +156,7 @@ void artSetupMapArt(const char *filename)
         while (filename[startidx] == '/')
             startidx++;
 
-        char realmappath[BMAX_PATH];
+        char realmappath[PATH_MAX];
         char* realpath_ptr = Brealpath(&filename[startidx], realmappath);
         if (realpath_ptr != NULL)
         {
