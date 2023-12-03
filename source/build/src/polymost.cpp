@@ -901,6 +901,8 @@ void polymost_initdrawpoly(void)
     r_persistentStreamBuffer = 0;
     r_detailmapping = 0;
     r_usesamplerobjects = 0;
+    r_glowmapping = 0;
+    r_detailmapping = 0;
 #endif
 
     drawpolyVertsBufferLength = r_drawpolyVertsBufferLength;
