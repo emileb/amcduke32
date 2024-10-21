@@ -47,7 +47,7 @@ static const char *texcache_errors[TEXCACHEERRORS] = {
     "glGetTexLevelParameteriv failed",
 };
 
-static pthtyp *texcache_tryart(uint16_t const dapicnum, int32_t const dapalnum, int32_t const dashade, int32_t dameth)
+static pthtyp *texcache_tryart(int32_t const dapicnum, int32_t const dapalnum, int32_t const dashade, int32_t dameth)
 {
     const int32_t j = dapicnum&(GLTEXCACHEADSIZ-1);
     pthtyp *pth;
@@ -98,7 +98,7 @@ static pthtyp *texcache_tryart(uint16_t const dapicnum, int32_t const dapalnum, 
     return pth;
 }
 
-pthtyp *texcache_fetchmulti(pthtyp *pth, hicreplctyp *si, uint16_t dapicnum, int32_t dameth)
+pthtyp *texcache_fetchmulti(pthtyp *pth, hicreplctyp *si, int32_t dapicnum, int32_t dameth)
 {
     const int32_t j = dapicnum&(GLTEXCACHEADSIZ-1);
     int32_t i;
@@ -131,7 +131,7 @@ pthtyp *texcache_fetchmulti(pthtyp *pth, hicreplctyp *si, uint16_t dapicnum, int
 }
 
 // <dashade>: ignored if not in Polymost+r_usetileshades
-pthtyp *texcache_fetch(uint16_t dapicnum, int32_t dapalnum, int32_t dashade, int32_t dameth)
+pthtyp *texcache_fetch(int32_t dapicnum, int32_t dapalnum, int32_t dashade, int32_t dameth)
 {
     const int32_t j = dapicnum & (GLTEXCACHEADSIZ - 1);
     int indexed = 0;
@@ -317,6 +317,10 @@ static void texcache_deletefiles(void)
 
 int32_t texcache_enabled(void)
 {
+#if defined USE_GLES2
+    return 0;
+#endif
+
 #if defined USE_GLEXT && !defined EDUKE32_GLES
     if (!glinfo.texcompr || !glusetexcompr)
         return 0;
@@ -576,7 +580,7 @@ void texcache_prewritetex(texcacheheader *head)
     head->quality = B_LITTLE32(head->quality);
 }
 
-#if defined USE_GLEXT && !defined EDUKE32_GLES
+#if defined USE_GLEXT && !defined EDUKE32_GLES  && !defined USE_GLES2
 
 #define WRITEX_FAIL_ON_ERROR() if (glGetError() != GL_NO_ERROR) goto failure
 
@@ -772,7 +776,7 @@ static int32_t texcache_loadmips(const texcacheheader *head, GLenum *glerr)
 
     int32_t alloclen=0;
 
-#if !defined USE_GLEXT && defined EDUKE32_GLES
+#if !defined USE_GLEXT && defined USE_GLES2
     UNREFERENCED_PARAMETER(glerr);
     UNREFERENCED_PARAMETER(head);
 #endif
@@ -801,7 +805,7 @@ static int32_t texcache_loadmips(const texcacheheader *head, GLenum *glerr)
             midbuf   = (void *)Xrealloc(midbuf, pict.size);
         }
 
-#if defined USE_GLEXT && !defined EDUKE32_GLES
+#if defined USE_GLEXT && !defined USE_GLES2
         if (dedxtfilter(&pict, pic, midbuf, packbuf, (head->flags & CACHEAD_COMPRESSED) != 0))
         {
             TEXCACHE_FREEBUFS();
