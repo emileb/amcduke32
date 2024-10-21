@@ -2744,7 +2744,7 @@ static int32_t defsparser(scriptfile *script)
             if (EDUKE32_PREDICT_FALSE(scriptfile_getbraces(script, &mapartend)))
                 break;
 
-            char mappath[BMAX_PATH];
+            char mappath[PATH_MAX];
             char* resolved_ptr = Brealpath(strtemp, mappath);
             if (resolved_ptr == NULL)
             {

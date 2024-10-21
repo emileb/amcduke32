@@ -608,13 +608,8 @@ typedef FILE BFILE;
 
 ////////// Standard library wrappers //////////
 
-#ifdef __ANDROID__
-# define BS_IWRITE S_IWUSR
-# define BS_IREAD  S_IRUSR
-#else
 # define BS_IWRITE S_IWRITE
 # define BS_IREAD  S_IREAD
-#endif
 
 #if defined(__cplusplus) && defined(_MSC_VER)
 # define Bstrdup _strdup
@@ -713,10 +708,20 @@ static FORCE_INLINE int32_t Blrintf(const float x)
 # define Bsqrtf sqrtf
 #endif
 
+
 #ifdef __ANDROID__
 void eduke32_exit_return(int) ATTRIBUTE((noreturn));
 # define exit(x) eduke32_exit_return(x)
 #endif
+
+// redefined for apple/ppc, which chokes on stderr when linking...
+#if defined EDUKE32_OSX && defined __BIG_ENDIAN__
+# define ERRprintf(fmt, ...) printf(fmt, ## __VA_ARGS__)
+#else
+# define ERRprintf(fmt, ...) fprintf(stderr, fmt, ## __VA_ARGS__)
+#endif
+
+
 
 #ifdef DEBUGGINGAIDS
 #define Bexit(status)                                                                            \
@@ -1521,10 +1526,6 @@ static inline void maybe_grow_buffer(char ** const buffer, int32_t * const buffe
 
 #define WITHKPLIB
 
-#if defined __ANDROID__ || defined EDUKE32_IOS
-# define EDUKE32_TOUCH_DEVICES
-# define EDUKE32_GLES
-#endif
 
 #if DEBUGGINGAIDS>=2
 # define DEBUG_MAIN_ARRAYS
