@@ -636,11 +636,7 @@ static int osdfunc_history(osdcmdptr_t UNUSED(parm))
 //
 void OSD_Cleanup(void)
 {
-<<<<<<< HEAD
 #ifdef USE_MIMALLOC
-=======
-#ifndef __ANDROID__
->>>>>>> 6269f1423 (Android changes)
     mi_register_output(NULL, NULL);
 #endif
     osd_clear();
@@ -826,17 +822,10 @@ void OSD_Init(void)
 
     hash_init(&h_osd);
     hash_init(&h_cvars);
-<<<<<<< HEAD
 
 #ifdef USE_MIMALLOC
     mi_register_output((mi_output_fun *)(void *)&mi_log, NULL);
 #endif
-=======
-    
-#ifndef __ANDROID__
-    mi_register_output((mi_output_fun *)(void *)&mi_log, NULL);
-#endif    
->>>>>>> 6269f1423 (Android changes)
 
     static osdcvardata_t cvars_osd [] =
     {

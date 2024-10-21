@@ -6,6 +6,7 @@ LOCAL_MODULE := amc_xmp
 
 LOCAL_C_INCLUDES := \
 $(LOCAL_PATH)/../include/libxmp-lite \
+$(LOCAL_PATH)/../../build/include \
 
 
 

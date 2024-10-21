@@ -710,8 +710,8 @@ static FORCE_INLINE int32_t Blrintf(const float x)
 
 
 #ifdef __ANDROID__
-void eduke32_exit_return(int) ATTRIBUTE((noreturn));
-# define exit(x) eduke32_exit_return(x)
+//void eduke32_exit_return(int) ATTRIBUTE((noreturn));
+//# define exit(x) eduke32_exit_return(x)
 #endif
 
 // redefined for apple/ppc, which chokes on stderr when linking...

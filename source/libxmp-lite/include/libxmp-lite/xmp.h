@@ -8,11 +8,6 @@
 #include "compat.h"
 
 
-#define Xcalloc calloc
-#define Xfree free
-#define Xrealloc realloc
-#define Xmalloc malloc
-
 #ifdef __cplusplus
 extern "C" {
 #endif
