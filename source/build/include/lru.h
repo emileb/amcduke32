@@ -43,21 +43,13 @@ private:
     int m_count;
 
 public:
-<<<<<<< HEAD
+
 #ifdef USE_MIMALLOC
     CircularQueue() { m_items = (T *)mi_calloc(Capacity, sizeof(T)); clear(); }
     ~CircularQueue() { mi_free(m_items); }
 #else
     CircularQueue() { m_items = (T *)std::calloc(Capacity, sizeof(T)); clear(); }
     ~CircularQueue() { std::free(m_items); }
-=======
-#ifdef __ANDROID__
-    CircularQueue() { m_items = (T *)calloc(Capacity, sizeof(T)); clear(); }
-    ~CircularQueue() { free(m_items); }
-#else
-    CircularQueue() { m_items = (T *)mi_calloc(Capacity, sizeof(T)); clear(); }
-    ~CircularQueue() { mi_free(m_items); }
->>>>>>> 6269f1423 (Android changes)
 #endif
     void clear()
     {

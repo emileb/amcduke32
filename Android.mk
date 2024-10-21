@@ -170,7 +170,7 @@ imgui_objs := \
     imgui/src/imgui_demo.cpp \
     imgui/src/imgui_draw.cpp \
     imgui/src/imgui_impl_opengl3.cpp \
-    imgui/src/imgui_impl_sdl.cpp \
+    imgui/src/imgui_impl_sdl2.cpp \
     imgui/src/imgui_tables.cpp \
     imgui/src/imgui_widgets.cpp \
 
