@@ -117,6 +117,10 @@ static uint64_t functionHeld = 0;
 
 void changeActionState(int state, int action)
 {
+    LOGI("Change action %d => %d", action, state);
+    if(action < 0)
+        return;
+
 	if (state)
 	{
 		functionSticky  |= ((uint64_t)1<<((uint64_t)(action)));
@@ -131,6 +135,8 @@ bool buttonDown(int action)
 {
 	return !!(functionHeld && ((uint64_t)1<<((uint64_t)(action))));
 }
+
+int32_t CONFIG_FunctionNameToNum(const char *func);
 
 void PortableAction(int state, int action)
 {
@@ -187,33 +193,25 @@ void PortableAction(int state, int action)
 			changeActionState(state, gamefunc_Strafe_Right);
 			break;
 
-		case PORT_ACT_FLY_UP:
-			//changeActionState(state, Button_MoveUp);
-			break;
-
-		case PORT_ACT_FLY_DOWN:
-			//changeActionState(state, Button_MoveDown);
-			break;
-
 		case PORT_ACT_USE:
 			changeActionState(state, gamefunc_Open);
 			break;
 
 		case PORT_ACT_ATTACK:
-			changeActionState(state, gamefunc_Fire);
+            changeActionState(state, CONFIG_FunctionNameToNum("PRIMARY_FIRE"));
 			break;
 
 		case PORT_ACT_ALT_ATTACK:
-			changeActionState(state, gamefunc_Alt_Fire);
+            changeActionState(state, CONFIG_FunctionNameToNum("SECONDARY_FIRE"));
 			break;
 
 		case PORT_ACT_TOGGLE_ALT_ATTACK:
 			if(state)
 			{
 				if(buttonDown(gamefunc_Alt_Fire))
-					changeActionState(0, gamefunc_Alt_Fire);
+                    changeActionState(0, CONFIG_FunctionNameToNum("SECONDARY_FIRE"));
 				else
-					changeActionState(1, gamefunc_Alt_Fire);
+					changeActionState(1, CONFIG_FunctionNameToNum("SECONDARY_FIRE"));
 			}
 
 			break;
@@ -324,15 +322,18 @@ void PortableAction(int state, int action)
 			changeActionState(state, gamefunc_Alt_Weapon);
 			break;
 
-		// IONFURY
+        case PORT_ACT_ZOOM_IN:
+            changeActionState(state, gamefunc_Aim_Down);
+            break;
+
 		case PORT_ACT_RELOAD:
-			changeActionState(state, gamefunc_Steroids); // Reload is Steroids
+            changeActionState(state, CONFIG_FunctionNameToNum("RELOAD_/_TERTIARY_FIRE"));
 			break;
 		case PORT_ACT_MEDKIT:
 			changeActionState(state, gamefunc_MedKit);
 			break;
-		case PORT_ACT_RADAR:
-			changeActionState(state, gamefunc_NightVision); // Radar is Nightvision
+		case PORT_ACT_HELPCOMP:
+            changeActionState(state, CONFIG_FunctionNameToNum("PDA"));
 			break;
 		}
 	}
@@ -407,13 +408,7 @@ extern "C"
 // Start game, does not return!
 void PortableInit(int argc, const char ** argv)
 {
-	if(gameType == RAZE_GAME_IONFURY)
-		strcpy(userFilesSubFolder, "ionfury");
-	else if(gameType == RAZE_GAME_EDUKE32)
-		strcpy(userFilesSubFolder, "eduke32");
-	else
-		strcpy(userFilesSubFolder, "unknown");
-
+    strcpy(userFilesSubFolder, "amc");
 	eduke32_android_main(argc, (char **)argv);
 }
 
@@ -484,6 +479,15 @@ extern "C" int blockGamepad(void);
 #define ANDROIDPITCHFACTORJOYSTICK          2000
 #define ANDROIDYAWFACTORJOYSTICK            4000
 
+void Mobile_Exec_cmd()
+{
+    if(cmd_to_run)
+    {
+        OSD_Dispatch(cmd_to_run, true);
+        cmd_to_run = NULL;
+    }
+}
+
 void Mobile_IN_Move(ControlInfo *input)
 {
 	int blockMove = blockGamepad() & ANALOGUE_AXIS_FWD;
@@ -510,7 +514,7 @@ void Mobile_IN_Move(ControlInfo *input)
 
 	if(cmd_to_run)
 	{
-		OSD_Dispatch(cmd_to_run);
+		OSD_Dispatch(cmd_to_run, true);
 		cmd_to_run = NULL;
 	}
 
