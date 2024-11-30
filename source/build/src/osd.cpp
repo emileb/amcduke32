@@ -1915,6 +1915,11 @@ void OSD_WritePendingLines(void)
 //
 void OSD_DispatchQueued(void)
 {
+#ifdef __ANDROID__
+    void Mobile_Exec_cmd();
+    Mobile_Exec_cmd();
+#endif
+
     if (!osd->history.exec)
         return;
 
