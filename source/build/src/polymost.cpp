@@ -52,7 +52,7 @@ int32_t r_parallaxskypanning = 1;
 int32_t r_polygonmode;     // 0:GL_FILL,1:GL_LINE,2:GL_POINT //FUK
 int32_t r_polymostDebug;
 int32_t r_shadeinterpolate = 1;
-int32_t r_skyzbufferhack;
+int32_t r_skyzbufferhack = 1;
 int32_t r_useindexedcolortextures = 1;
 int32_t r_usenewshading = 4;
 int32_t r_usesamplerobjects = 1;
@@ -263,7 +263,7 @@ int32_t hicprecaching = 0;
 hitdata_t polymost_hitdata;
 
 #if 0
-static inline int32_t gltexmayhavealpha(int32_t dapicnum, int32_t dapalnum)
+static inline int32_t gltexmayhavealpha(uint16_t dapicnum, int32_t dapalnum)
 {
     const int32_t j = (dapicnum&(GLTEXCACHEADSIZ-1));
     pthtyp *pth;
@@ -276,7 +276,7 @@ static inline int32_t gltexmayhavealpha(int32_t dapicnum, int32_t dapalnum)
 }
 #endif
 
-void gltexinvalidate(int32_t dapicnum, int32_t dapalnum, int32_t dameth)
+void gltexinvalidate(uint16_t dapicnum, int32_t dapalnum, int32_t dameth)
 {
     const int32_t pic = (dapicnum&(GLTEXCACHEADSIZ-1));
 
@@ -998,7 +998,7 @@ void polymost_glinit()
     {
         // add a blank texture for tileUID 0
         tilepacker_addTile(0, 2, 2);
-        for (int picnum = 0; picnum < MAXTILES; ++picnum)
+        for (uint16_t picnum = 0; picnum < MAXTILES; ++picnum)
         {
             tilepacker_addTile(picnum+1, (uint32_t) tilesiz[picnum].y, (uint32_t) tilesiz[picnum].x);
         }
@@ -1787,7 +1787,7 @@ void uploadpalswap(int32_t palookupnum)
 
 #if 0
 // TODO: make configurable
-static int32_t tile_is_sky(int32_t tilenum)
+static int32_t tile_is_sky(uint16_t tilenum)
 {
     return return (tilenum >= 78 /*CLOUDYOCEAN*/ && tilenum <= 99 /*REDSKY2*/);
 }
@@ -1821,7 +1821,7 @@ static void polymost_setuptexture(const int32_t dameth, int filter)
     }
 }
 
-static void gloadtile_art_indexed(int32_t dapic, int32_t dameth, pthtyp *pth, int32_t doalloc)
+static void gloadtile_art_indexed(uint16_t dapic, int32_t dameth, pthtyp *pth, int32_t doalloc)
 {
     vec2_16_t const & tsizart = tilesiz[dapic];
     vec2_t siz = { tsizart.x, tsizart.y };
@@ -1894,7 +1894,7 @@ static void gloadtile_art_indexed(int32_t dapic, int32_t dameth, pthtyp *pth, in
     pth->siz = siz;
 }
 
-void gloadtile_art(int32_t dapic, int32_t dapal, int32_t tintpalnum, int32_t dashade, int32_t dameth, pthtyp *pth, int32_t doalloc)
+void gloadtile_art(uint16_t dapic, int32_t dapal, int32_t tintpalnum, int32_t dashade, int32_t dameth, pthtyp *pth, int32_t doalloc)
 {
     if (dameth & DAMETH_INDEXED)
     {
@@ -2290,7 +2290,7 @@ coltype *gloadtruecolortile_mdloadskin_shared(char *fn, int32_t picfillen, vec2_
     return pic;
 }
 
-int32_t gloadtile_hi(int32_t dapic, int32_t dapalnum, int32_t facen, hicreplctyp* hicr,
+int32_t gloadtile_hi(uint16_t dapic, int32_t dapalnum, int32_t facen, hicreplctyp* hicr,
                             int32_t dameth, pthtyp *pth, int32_t doalloc, polytintflags_t effect)
 {
     if (!hicr) return -1;
@@ -5026,7 +5026,7 @@ static void polymost_flatskyrender(vec2f_t const* const dpxy, int32_t const n, i
 
     polymost_setClamp((npot || xpanning != 0) ? 0 : 2);
 
-    int picnumbak = globalpicnum;
+    uint16_t picnumbak = globalpicnum;
     int32_t const ogclipdist = globalclipdist;
     globalclipdist = 0;
     ti = globalpicnum;
@@ -8722,13 +8722,13 @@ EDUKE32_STATIC_ASSERT((int)RS_YFLIP == (int)HUDFLAG_FLIPPED);
 //dastat&128  1:draw all pages (permanent)
 //cx1,...     clip window (actual screen coords)
 
-void polymost_dorotatespritemodel(int32_t sx, int32_t sy, int32_t z, int16_t a, int16_t picnum,
+void polymost_dorotatespritemodel(int32_t sx, int32_t sy, int32_t z, int16_t a, uint16_t picnum,
     int8_t dashade, char dapalnum, int32_t dastat, uint8_t daalpha, uint8_t dablend, int32_t uniqid)
 {
     float d, cosang, sinang, cosang2, sinang2;
     float m[4][4];
 
-    const int32_t tilenum = Ptile2tile(picnum, dapalnum);
+    const uint16_t tilenum = Ptile2tile(picnum, dapalnum);
 
     if (tile2model[tilenum].modelid == -1 || tile2model[tilenum].framenum == -1)
         return;
@@ -8955,7 +8955,7 @@ void polymost_dorotatespritemodel(int32_t sx, int32_t sy, int32_t z, int16_t a, 
     gstang = ogstang;
 }
 
-void polymost_dorotatesprite(int32_t sx, int32_t sy, int32_t z, int16_t a, int16_t picnum,
+void polymost_dorotatesprite(int32_t sx, int32_t sy, int32_t z, int16_t a, uint16_t picnum,
                              int8_t dashade, char dapalnum, int32_t dastat, uint8_t daalpha, uint8_t dablend,
                              int32_t cx1, int32_t cy1, int32_t cx2, int32_t cy2, int32_t uniqid)
 {
@@ -8977,7 +8977,7 @@ void polymost_dorotatesprite(int32_t sx, int32_t sy, int32_t z, int16_t a, int16
     polymost_setClamp(1+2);
     polymost_setVisibility(globvis2);
 
-    int32_t const ogpicnum = globalpicnum;
+    uint16_t const ogpicnum = globalpicnum;
     globalpicnum = picnum;
     int32_t const  ogshade = globalshade;
     globalshade = dashade;
@@ -9466,7 +9466,7 @@ void polymost_fillpolygon(int32_t npoints)
     }
 }
 
-int32_t polymost_drawtilescreen(int32_t tilex, int32_t tiley, int32_t tilenum, int32_t dimen, int32_t tilezoom,
+int32_t polymost_drawtilescreen(int32_t tilex, int32_t tiley, uint16_t tilenum, int32_t dimen, int32_t tilezoom,
                                 int32_t usehitile, uint8_t *loadedhitile)
 {
     float xdime, ydime, xdimepad, ydimepad, scx, scy, ratio = 1.f;
@@ -9952,7 +9952,7 @@ void polymost_initosdfuncs(void)
         OSD_RegisterCvar(&cvars_polymost[i], (cvars_polymost[i].flags & CVAR_FUNCPTR) ? osdcmd_cvar_set_polymost : osdcmd_cvar_set);
 }
 
-void polymost_precache(int32_t dapicnum, int32_t dapalnum, int32_t datype)
+void polymost_precache(uint16_t dapicnum, int32_t dapalnum, int32_t datype)
 {
     // dapicnum and dapalnum are like you'd expect
     // datype is 0 for a wall/floor/ceiling and 1 for a sprite
@@ -9983,7 +9983,7 @@ void polymost_precache(int32_t dapicnum, int32_t dapalnum, int32_t datype)
 
 #include "compat.h"
 
-int32_t polymost_drawtilescreen(int32_t tilex, int32_t tiley, int32_t tilenum, int32_t dimen,
+int32_t polymost_drawtilescreen(int32_t tilex, int32_t tiley, uint16_t tilenum, int32_t dimen,
                                 int32_t usehitile, uint8_t *loadedhitile)
 {
     UNREFERENCED_PARAMETER(tilex);
