@@ -32,46 +32,30 @@ static OutputFileCounter savecounter;
 
 char savegame_dir[BMAX_PATH] = "savegames";
 
-// Note: while this uses the moddir to create the directory, it returns the path to the save file without the moddir
-// Assumption: the moddir is added separately in subsequent steps to the savegame path
-static char* getSavegamePath(const char* filename)
+static char* createInitialSavegamePath()
 {
+    static char const SaveName[] = "save0000.esv";
+    if (!savegame_dir[0])
+        return Xstrdup(SaveName);
+
     char dirPath[BMAX_PATH];
-    char filePath[BMAX_PATH];
-
-    if (savegame_dir[0])
+    int const len = G_ModDirSnprintfLite(dirPath, BMAX_PATH, savegame_dir);
+    if (len >= BMAX_PATH - 1)
     {
-        int const len = G_ModDirSnprintfLite(dirPath, BMAX_PATH, savegame_dir);
-        if (len >= ARRAY_SSIZE(dirPath)-1)
-        {
-            LOG_F(ERROR, "Savegame directory path is too long, using base directory.");
-            Bsnprintf(filePath, BMAX_PATH, "%s", filename);
-        }
-        else
-        {
-            struct Bstat st;
-            if (!Bstat(dirPath, &st) && ((st.st_mode & S_IFMT) == S_IFDIR))
-                Bsnprintf(filePath, BMAX_PATH, "%s/%s", savegame_dir, filename);
-            else if (buildvfs_mkdir(dirPath, S_IRWXU) == 0)
-            {
-#ifndef NDEBUG
-                OSD_Printf("Savegame directory \"%s\" created successfully!\n", dirPath);
-#endif
-                Bsnprintf(filePath, BMAX_PATH, "%s/%s", savegame_dir, filename);
-            }
-            else
-            {
-                OSD_Printf("Failed to create savegame directory \"%s\", using base directory.\n", dirPath);
-                Bsnprintf(filePath, BMAX_PATH, "%s", filename);
-            }
-        }
+        LOG_F(ERROR, "Savegame directory path is too long, using base directory.");
+        return Xstrdup(SaveName);
     }
-    else
-        Bsnprintf(filePath, BMAX_PATH, "%s", filename);
 
-    char* ret = Xstrdup(filePath);
+    struct Bstat st;
+    if ((!Bstat(dirPath, &st) && ((st.st_mode & S_IFMT) == S_IFDIR)) || (buildvfs_mkdir(dirPath, S_IRWXU) == 0))
+    {
+        char filePath[BMAX_PATH];
+        Bsnprintf(filePath, BMAX_PATH, "%s/%s", savegame_dir, SaveName);
+        return Xstrdup(filePath);
+    }
 
-    return ret;
+    LOG_F(ERROR, "Failed to create savegame directory \"%s\", instead using game root directory.", dirPath);
+    return Xstrdup(SaveName);
 }
 
 // For storing pointers in files.
@@ -191,7 +175,7 @@ static uint16_t g_numinternalsaves;
 static void ReadSaveGameHeaders_CACHE1D(BUILDVFS_FIND_REC *f, bool isSavegameDir)
 {
     savehead_t h;
-    char savefn[BMAX_PATH];
+    char savefn[BMAX_PATH] = {0};
 
     // don't read the base dir twice
     if (isSavegameDir && !savegame_dir[0])
@@ -927,9 +911,9 @@ int32_t G_SavePlayer(savebrief_t & sv, bool isAutoSave)
     }
     else
     {
-        char* savegamePath = getSavegamePath("save0000.esv");
+        char* savegamePath = createInitialSavegamePath();
         int const len = G_ModDirSnprintfLite(fn, BMAX_PATH, savegamePath);
-        if (len >= ARRAY_SSIZE(fn)-1)
+        if (len >= BMAX_PATH - 1)
         {
             LOG_F(ERROR, "Resulting save filename is too long.");
             Xfree(savegamePath);
@@ -939,7 +923,7 @@ int32_t G_SavePlayer(savebrief_t & sv, bool isAutoSave)
         fil = savecounter.opennextfile(fn, zeros);
         savecounter.count++;
         // don't copy the mod dir into sv.path
-        Bstrcpy(sv.path, fn + (len - Bstrlen(savegamePath)));
+        Bstrncpy(sv.path, fn + (len - Bstrlen(savegamePath)), BMAX_PATH);
         Xfree(savegamePath);
     }
 
