@@ -14,6 +14,11 @@
 
 #include "xxhash_config.h"
 
+#ifdef __ANDROID__
+#include <android/log.h>
+#include "LogWritter.h"
+#endif
+
 #include "vfs.h"
 #include "common.h"
 
@@ -991,6 +996,10 @@ void OSD_SetParameters(int promptShade, int promptPal, int editShade, int editPa
     draw.highlight   = highlight;
 
     osd->flags |= flags;
+
+#ifdef __ANDROID__ // Always allow console on Android
+    osd->flags &= ~OSD_PROTECTED;
+#endif
 }
 
 
@@ -1785,7 +1794,10 @@ void OSD_Puts(const char *putstr)
 {
     if (putstr[0] == 0 || !osd)
         return;
-
+#ifdef __ANDROID__
+    __android_log_print(ANDROID_LOG_INFO,"DUKE", "%s",putstr);
+     LogWritter_Write(putstr);
+#endif
     osd->log.m_pending.push(new AtomicLogString(Xstrdup(putstr)));
     OSD_WritePendingLines();
 }
@@ -1953,6 +1965,11 @@ void OSD_WritePendingLines(void)
 //
 void OSD_DispatchQueued(void)
 {
+#ifdef __ANDROID__
+    void Mobile_Exec_cmd();
+    Mobile_Exec_cmd();
+#endif
+
     if (!osd->history.exec)
         return;
 

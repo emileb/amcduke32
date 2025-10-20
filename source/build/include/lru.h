@@ -43,6 +43,7 @@ private:
     int m_count;
 
 public:
+
 #ifdef USE_MIMALLOC
     CircularQueue() { m_items = (T *)mi_calloc(Capacity, sizeof(T)); clear(); }
     ~CircularQueue() { mi_free(m_items); }
@@ -73,7 +74,7 @@ public:
             ++m_count;
         if ((++m_head == m_tail) | (m_tail == -1))
         {
-            if ((m_tail != -1) & ((ResetItems & RF_FREE) == RF_FREE))
+            if ((ResetItems & RF_FREE) && (m_tail != -1))
                 Xfree(m_items[m_tail]);
             m_tail = (m_tail + 1) % Capacity;
         }
