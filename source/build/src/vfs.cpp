@@ -286,7 +286,12 @@ int32_t findfrompath(const char *fn, char **where)
     if (!fn || !fn[0])
         return -1;
 
+#ifdef __ANDROID__
+    // Relative names go through the search paths first, three misses on the cwd through FUSE cost ~3 ms per file
+    if (pathsearchmode && fn[0] == '/')
+#else
     if (pathsearchmode)
+#endif
     {
         // test unmolested filename first
         if (buildvfs_exists(fn))
@@ -331,6 +336,7 @@ int32_t findfrompath(const char *fn, char **where)
 
     char *pfn = (char *)Xmalloc(allocsiz);
 
+#ifndef __ANDROID__
     strcpy(pfn, "./");
     strcat(pfn, ffn);
     if (buildvfs_exists(pfn))
@@ -339,6 +345,7 @@ int32_t findfrompath(const char *fn, char **where)
         Xfree(ffn);
         return 0;
     }
+#endif
 
     for (searchpath_t *sp = searchpathhead; sp; sp = sp->next)
     {
@@ -382,6 +389,18 @@ int32_t findfrompath(const char *fn, char **where)
 #endif
         Xfree(tfn);
     }
+
+#ifdef __ANDROID__
+    // The current dir is always a search path too, so probe it last: a miss through FUSE costs about a millisecond
+    strcpy(pfn, "./");
+    strcat(pfn, ffn);
+    if (buildvfs_exists(pfn))
+    {
+        *where = pfn;
+        Xfree(ffn);
+        return 0;
+    }
+#endif
 
     Xfree(pfn); Xfree(ffn);
     return -1;

@@ -2112,6 +2112,12 @@ static int check_file_exists(const char *fn)
 {
         static char buf[BMAX_PATH];
 
+#ifdef __ANDROID__
+        // Only a warning depends on this, and answering it lists every sound folder through SAF (~60 ms each) or FUSE before the game starts
+        UNREFERENCED_PARAMETER(fn);
+        return 0;
+#endif
+
         // .zip isn't case sensitive, and calling kopen4load on files in .zips is slow
         Bstrcpy(buf, fn);
         kzfindfilestart(buf);
