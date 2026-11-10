@@ -6801,6 +6801,13 @@ int app_main(int argc, char const* const* argv)
 
     G_ExtPreInit(argc, argv);
 
+#ifdef __ANDROID__
+    {
+        // Logs go in user_files, not the game folder
+        void G_AndroidUserFile(char *buf, size_t size, const char *file);
+        G_AndroidUserFile(g_logfile_dir, BMAX_PATH, "logs");
+    }
+#endif
     char logPath[BMAX_PATH];
     OSD_NewLogFilePath(logPath, BMAX_PATH, APPBASENAME, g_logfile_dir);
     engineSetLogFile(logPath, LOG_GAME_MAX);
