@@ -654,7 +654,19 @@ int32_t artLoadFiles(const char *filename, int32_t askedsize)
     Bmemset(gotpic, 0, sizeof(gotpic));
     //cachesize = min((int32_t)((Bgetsysmemsize()/100)*60),max(artsize,askedsize));
     g_vm_size = (Bgetsysmemsize() <= (uint32_t)askedsize) ? (int32_t)((Bgetsysmemsize() / 100) * 60) : askedsize;
+#if defined __ANDROID__ && !defined __LP64__
+    // 32-bit: the mod's 1 GB cachesize doesn't fit in the address space, so cap it and halve until it does
+    if (g_vm_size > (256 << 20))
+        g_vm_size = 256 << 20;
+    g_vm_data = Bmalloc(g_vm_size);
+    while (!g_vm_data && g_vm_size > (32 << 20))
+        g_vm_data = Bmalloc(g_vm_size /= 2);
+    if (!g_vm_data)
+        g_vm_data = Xmalloc(g_vm_size);
+    initprintf("Tile cache: %d MB\n", g_vm_size >> 20);
+#else
     g_vm_data = Xmalloc(g_vm_size);
+#endif
     g_cache.initBuffer((intptr_t) g_vm_data, g_vm_size);
 
     artUpdateManifest();
